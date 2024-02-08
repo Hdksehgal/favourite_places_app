@@ -39,7 +39,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     return Scaffold(
       appBar: AppBar(
           title:
-          Text(widget.isSelecting ? 'Pick your Location' : 'Your Location'),
+              Text(widget.isSelecting ? 'Pick your Location' : 'Your Location'),
           actions: [
             if (widget.isSelecting)
               IconButton(
@@ -58,27 +58,49 @@ class _MapScreenState extends ConsumerState<MapScreen> {
         children: [
           TileLayer(
             urlTemplate:
-            'https://{s}.google.com/vt/lyrs=m&hl={hl}&x={x}&y={y}&z={z}',
+                'https://{s}.google.com/vt/lyrs=m&hl={hl}&x={x}&y={y}&z={z}',
             additionalOptions: const {'hl': 'en'},
             subdomains: const ['mt0', 'mt1', 'mt2', 'mt3'],
           ),
           //if (_pickedLocation != null)
-            MarkerLayer(
-              markers: [
-                Marker(
-                  point: _pickedLocation ??
-                      LatLng(
-                        widget.location.latitude,
-                        widget.location.longitude,
-                      ),
-                  builder: (context) => const Icon(
-                    Icons.location_pin,
-                    size: 25,
-                    color: Colors.pink,
-                  ),
+          MarkerLayer(
+            markers: [
+              Marker(
+                // ?? means that if _pickedLocation if not null then
+                // point : _pickedLocation i.e.
+                // Marker should point to _pickedLocation itself
+                // and if it is null then it should point to the location
+                // point : LatLng(
+                //          widget.location.latitude,
+                //          widget.location.longitude,
+                //                ),
+                point: _pickedLocation ??
+                    LatLng(
+                      widget.location.latitude,
+                      widget.location.longitude,
+                    ),
+                builder: (context) => const Icon(
+                  Icons.location_pin,
+                  size: 25,
+                  color: Colors.pink,
                 ),
-              ],
-            ),
+              ),
+              // Alternate for markers :
+              // ( _pickedLocation == null && widget.isSelecting) ? {} :
+              // {
+              //   Marker(
+              //                   point: _pickedLocation ??
+              //                       LatLng(
+              //                         widget.location.latitude,
+              //                         widget.location.longitude,
+              //                       ),
+              //                   builder: (context) => const Icon(
+              //                     Icons.location_pin,
+              //                     size: 25,
+              //                     color: Colors.pink,
+              //                   ),
+            ],
+          ),
         ],
       ),
     );

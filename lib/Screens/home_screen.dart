@@ -12,10 +12,18 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  List<Place> ListUsed = [];
+  // List<Place> ListUsed = [];
+  late Future<void> placesfuture;
+
+  @override
+  void initState() {
+    super.initState();
+    placesfuture = ref.read(PlacesProvider.notifier).loadPlaces();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final placesList = ref.watch(PlacesProvider);
+    List<Place> placesList = ref.watch(PlacesProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -24,54 +32,67 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           IconButton(
             icon: Icon(Icons.add_rounded),
             onPressed: () async {
-              final List<Place> list = await Navigator.of(context).push(
+              final list = await Navigator.of(context).push(
                   MaterialPageRoute(builder: (context) => AddPlacesScreen()));
               setState(() {
-                ListUsed = list;
+                placesList = list;
               });
             },
           ),
         ],
       ),
-      body: placesList.isEmpty
-          ? Center(
-              child: Text(
-              'No Places yet',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge!
-                  .copyWith(color: Theme.of(context).colorScheme.onBackground),
-            ))
-          : Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ListView.builder(
-                  itemCount: ListUsed.length,
-                  itemBuilder: (context, index) => ListTile(
-                      leading: CircleAvatar(
-                        backgroundImage: FileImage(placesList[index].image),
-                        radius: 26,
-                      ),
-                      title: Text(
-                        ListUsed[index].name,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium!
-                            .copyWith(
-                                color:
-                                    Theme.of(context).colorScheme.onBackground),
-                      ),
-                      subtitle: Text(
-                        placesList[index].location.address,
-                        style: Theme.of(context).textTheme.bodySmall!.copyWith(
+      body: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: FutureBuilder(
+            future: placesfuture,
+            builder: (context, snapshot) => snapshot.connectionState ==
+                    ConnectionState.waiting
+                ? const Center(child: CircularProgressIndicator())
+                : placesList.isEmpty
+                    ? Center(
+                        child: Text(
+                        'No Places yet',
+                        style: Theme.of(context).textTheme.titleLarge!.copyWith(
                             color: Theme.of(context).colorScheme.onBackground),
-                      ),
-                      onTap: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (ctx) => PlacesDetailScreen(
-                                  place: ListUsed[index],
-                                )));
-                      })),
-            ),
+                      ))
+                    : ListView.builder(
+                        itemCount: placesList.length,
+                        itemBuilder: (context, index) => ListTile(
+
+                            leading: CircleAvatar(
+                              backgroundImage:
+                                  FileImage(placesList[index].image),
+                              radius: 26,
+                            ),
+                            title: Text(
+                              placesList[index].name,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium!
+                                  .copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onBackground),
+                            ),
+                            subtitle: Text(
+                              placesList[index].location.address,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall!
+                                  .copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onBackground),
+                            ),
+                            onTap: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (ctx) => PlacesDetailScreen(
+                                        place: placesList[index],
+                                      )));
+                            },
+
+                        )),
+          )),
     );
   }
 }
